@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+
+{% block title %}TODO App - Home{% endblock %}
+
+{% block extra_css %}
+<style>
+    .task-form {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+    }
+    .task-form h2 {
+        font-size: 1.3em;
+        margin-bottom: 15px;
+        color: #667eea;
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        color: #555;
+        font-weight: 500;
+    }
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+    .form-group textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.3s;
+    }
+    .btn-primary {
+        background: #667eea;
+        color: white;
+    }
+    .btn-primary:hover {
+        background: #5568d3;
+    }
+    .btn-success {
+        background: #28a745;
+        color: white;
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+    .btn-success:hover {
+        background: #218838;
+    }
+    .btn-danger:hover {
+        background: #c82333;
+    }
+    .tasks-section {
+        margin-bottom: 30px;
+    }
+    .tasks-section h2 {
+        font-size: 1.5em;
+        margin-bottom: 15px;
+        color: #333;
+        border-bottom: 2px solid #667eea;
+        padding-bottom: 10px;
+    }
+    .task-list {
+        list-style: none;
+    }
+    .task-item {
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s;
+    }
+    .task-item:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .task-item.completed {
+        background: #f0f0f0;
+        opacity: 0.8;
+    }
+    .task-content {
+        flex: 1;
+    }
+    .task-title {
+        font-size: 1.1em;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 5px;
+    }
+    .task-item.completed .task-title {
+        text-decoration: line-through;
+        color: #999;
+    }
+    .task-description {
+        color: #666;
+        font-size: 0.9em;
+        margin-bottom: 5px;
+    }
+    .task-meta {
+        font-size: 0.85em;
+        color: #888;
+    }
+    .priority-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 3px;
+        font-size: 0.8em;
+        font-weight: 600;
+        margin-right: 10px;
+    }
+    .priority-low {
+        background: #d4edda;
+        color: #155724;
+    }
+    .priority-medium {
+        background: #fff3cd;
+        color: #856404;
+    }
+    .priority-high {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    .task-actions {
+        display: flex;
+        gap: 10px;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>My TODO List</h1>
+
+<div class="task-form">
+    <h2>Add New Task</h2>
+    <form method="post" action="{% url 'task_create' %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="id_title">Title *</label>
+            <input type="text" name="title" id="id_title" required>
+        </div>
+        <div class="form-group">
+            <label for="id_description">Description</label>
+            <textarea name="description" id="id_description"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="id_priority">Priority</label>
+            <select name="priority" id="id_priority">
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="high">High</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="id_due_date">Due Date</label>
+            <input type="datetime-local" name="due_date" id="id_due_date">
+        </div>
+        <button type="submit" class="btn btn-primary">Add Task</button>
+    </form>
+</div>
+
+<div class="tasks-section">
+    <h2>Pending Tasks ({{ pending_tasks.count }})</h2>
+    {% if pending_tasks %}
+    <ul class="task-list">
+        {% for task in pending_tasks %}
+        <li class="task-item">
+            <div class="task-content">
+                <div class="task-title">{{ task.title }}</div>
+                {% if task.description %}
+                <div class="task-description">{{ task.description }}</div>
+                {% endif %}
+                <div class="task-meta">
+                    <span class="priority-badge priority-{{ task.priority }}">{{ task.get_priority_display }}</span>
+                    {% if task.due_date %}
+                    Due: {{ task.due_date|date:"M d, Y H:i" }}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="task-actions">
+                <form method="post" action="{% url 'task_toggle' task.pk %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success">Complete</button>
+                </form>
+                <form method="post" action="{% url 'task_delete' task.pk %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                </form>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <div class="empty-state">No pending tasks. Great job!</div>
+    {% endif %}
+</div>
+
+<div class="tasks-section">
+    <h2>Completed Tasks ({{ completed_tasks.count }})</h2>
+    {% if completed_tasks %}
+    <ul class="task-list">
+        {% for task in completed_tasks %}
+        <li class="task-item completed">
+            <div class="task-content">
+                <div class="task-title">{{ task.title }}</div>
+                {% if task.description %}
+                <div class="task-description">{{ task.description }}</div>
+                {% endif %}
+                <div class="task-meta">
+                    <span class="priority-badge priority-{{ task.priority }}">{{ task.get_priority_display }}</span>
+                    Completed: {{ task.updated_at|date:"M d, Y H:i" }}
+                </div>
+            </div>
+            <div class="task-actions">
+                <form method="post" action="{% url 'task_toggle' task.pk %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success">Undo</button>
+                </form>
+                <form method="post" action="{% url 'task_delete' task.pk %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                </form>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <div class="empty-state">No completed tasks yet.</div>
+    {% endif %}
+</div>
+{% endblock %}
