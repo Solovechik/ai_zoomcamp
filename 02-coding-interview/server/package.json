@@ -1,0 +1,39 @@
+{
+  "name": "coding-interview-server",
+  "version": "1.0.0",
+  "description": "Backend server for real-time coding interview platform",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
+    "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch --runInBand",
+    "migrate": "node -e \"import('pg').then(async ({default: pg}) => { const client = new pg.Client({connectionString: process.env.DATABASE_URL || 'postgresql://devuser:devpass@localhost:5432/coding_interview'}); await client.connect(); const sql = require('fs').readFileSync('./database/migrations/001_initial_schema.sql', 'utf8'); await client.query(sql); await client.end(); console.log('Migration complete'); })\""
+  },
+  "keywords": [
+    "coding",
+    "interview",
+    "realtime",
+    "websocket"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "helmet": "^7.1.0",
+    "nanoid": "^3.3.7",
+    "pg": "^8.11.3",
+    "socket.io": "^4.7.2",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "axios": "^1.13.2",
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.2",
+    "socket.io-client": "^4.7.2"
+  }
+}
