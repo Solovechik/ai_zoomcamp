@@ -15,6 +15,8 @@ docker-compose up -d --build
 
 **📖 For detailed Docker deployment instructions, see [DOCKER.md](./DOCKER.md)**
 
+**🚀 For cloud deployment to Render.com, see [DEPLOYMENT.md](./DEPLOYMENT.md)**
+
 ### Option 2: Local Development
 
 ```bash

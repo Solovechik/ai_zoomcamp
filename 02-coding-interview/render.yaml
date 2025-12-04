@@ -1,0 +1,48 @@
+# Render Blueprint for Coding Interview Platform
+# This file enables one-click deployment to Render.com
+
+services:
+  # PostgreSQL Database
+  - type: pserv
+    name: coding-interview-db
+    env: docker
+    plan: free
+    databases:
+      - name: coding_interview
+        user: coding_interview_user
+
+  # Web Application (Frontend + Backend)
+  - type: web
+    name: coding-interview-app
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: ./02-coding-interview
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: DB_HOST
+        fromDatabase:
+          name: coding-interview-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: coding-interview-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: coding-interview-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: coding-interview-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: coding-interview-db
+          property: password
+      - key: CORS_ORIGIN
+        value: "*"
