@@ -1,5 +1,6 @@
 # Render Blueprint for Habit Tracker
 # Deploy with: render blueprint sync
+# Note: This file assumes deployment from the 04-habit-tracker subdirectory
 
 databases:
   - name: habit-tracker-db
@@ -11,6 +12,7 @@ services:
   - type: web
     name: habit-tracker-app
     env: docker
+    rootDir: 04-habit-tracker
     dockerfilePath: ./Dockerfile
     dockerContext: .
     plan: free
