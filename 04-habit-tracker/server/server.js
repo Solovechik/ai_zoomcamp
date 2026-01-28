@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import app from './src/app.js';
-import { testConnection } from './src/config/database.js';
+import { testConnection, initializeDatabase } from './src/config/database.js';
 
 const PORT = process.env.PORT || 3001;
 
@@ -11,6 +11,9 @@ async function start() {
   const dbConnected = await testConnection();
   if (!dbConnected) {
     console.warn('Warning: Database connection failed. Some features may not work.');
+  } else {
+    // Initialize database tables
+    await initializeDatabase();
   }
 
   app.listen(PORT, () => {
