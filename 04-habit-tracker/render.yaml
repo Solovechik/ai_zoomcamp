@@ -1,0 +1,46 @@
+# Render Blueprint for Habit Tracker
+# Deploy with: render blueprint sync
+
+databases:
+  - name: habit-tracker-db
+    plan: free
+    databaseName: habit_tracker
+    user: habit_tracker_user
+
+services:
+  - type: web
+    name: habit-tracker-app
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: DB_HOST
+        fromDatabase:
+          name: habit-tracker-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: habit-tracker-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: habit-tracker-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: habit-tracker-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: habit-tracker-db
+          property: password
+      - key: DB_SSL
+        value: "true"
+      - key: CORS_ORIGIN
+        value: "*"
