@@ -1,0 +1,729 @@
+openapi: 3.0.3
+info:
+  title: Habit Tracker API
+  description: |
+    RESTful API for the Habit Tracker application. This API enables users to:
+    - Create and manage daily habits with customizable properties
+    - Track daily completions with date-based entries
+    - Calculate and retrieve streak statistics
+    - View analytics and progress data
+  version: 1.0.0
+  contact:
+    name: Habit Tracker Support
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:3001
+    description: Local development server
+  - url: https://habit-tracker-app.onrender.com
+    description: Production server (Render.com)
+
+tags:
+  - name: Habits
+    description: Habit CRUD operations
+  - name: Completions
+    description: Daily completion tracking
+  - name: Statistics
+    description: Analytics and progress data
+  - name: Health
+    description: System health checks
+
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check endpoint
+      description: Returns the current health status of the API
+      operationId: getHealth
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /api/habits:
+    get:
+      tags:
+        - Habits
+      summary: List all habits
+      description: Retrieves all habits with today's completion status and current streak
+      operationId: getHabits
+      parameters:
+        - name: include_inactive
+          in: query
+          description: Include archived/inactive habits
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: List of habits
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HabitsListResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      tags:
+        - Habits
+      summary: Create a new habit
+      description: Creates a new habit with the specified properties
+      operationId: createHabit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateHabitRequest'
+      responses:
+        '201':
+          description: Habit created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HabitResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/habits/{id}:
+    get:
+      tags:
+        - Habits
+      summary: Get habit by ID
+      description: Retrieves a single habit with detailed statistics
+      operationId: getHabitById
+      parameters:
+        - $ref: '#/components/parameters/HabitId'
+      responses:
+        '200':
+          description: Habit details with statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HabitDetailResponse'
+        '404':
+          description: Habit not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      tags:
+        - Habits
+      summary: Update a habit
+      description: Updates an existing habit's properties
+      operationId: updateHabit
+      parameters:
+        - $ref: '#/components/parameters/HabitId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateHabitRequest'
+      responses:
+        '200':
+          description: Habit updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HabitResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Habit not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - Habits
+      summary: Delete or archive a habit
+      description: Archives a habit by default, or permanently deletes if specified
+      operationId: deleteHabit
+      parameters:
+        - $ref: '#/components/parameters/HabitId'
+        - name: permanent
+          in: query
+          description: Permanently delete instead of archiving
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Habit deleted/archived successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '404':
+          description: Habit not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/completions:
+    post:
+      tags:
+        - Completions
+      summary: Mark habit as completed
+      description: Records a completion entry for a habit on a specific date
+      operationId: createCompletion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompletionRequest'
+      responses:
+        '201':
+          description: Completion recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompletionResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Habit not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - Completions
+      summary: Remove a completion
+      description: Removes a completion entry for a habit on a specific date
+      operationId: deleteCompletion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompletionRequest'
+      responses:
+        '200':
+          description: Completion removed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Completion not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/completions/{habitId}:
+    get:
+      tags:
+        - Completions
+      summary: Get completion history
+      description: Retrieves completion dates for a specific habit
+      operationId: getCompletions
+      parameters:
+        - name: habitId
+          in: path
+          required: true
+          description: The habit ID
+          schema:
+            type: integer
+        - name: month
+          in: query
+          description: Filter by month (YYYY-MM format)
+          schema:
+            type: string
+            pattern: '^\d{4}-\d{2}$'
+            example: "2024-01"
+        - name: startDate
+          in: query
+          description: Start of date range (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          description: End of date range (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Completion history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompletionHistoryResponse'
+        '404':
+          description: Habit not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/stats/overview:
+    get:
+      tags:
+        - Statistics
+      summary: Get overview statistics
+      description: Retrieves overall statistics including today's progress and best streaks
+      operationId: getOverviewStats
+      responses:
+        '200':
+          description: Overview statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OverviewStatsResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/stats/habits/{id}:
+    get:
+      tags:
+        - Statistics
+      summary: Get habit-specific statistics
+      description: Retrieves detailed statistics for a specific habit
+      operationId: getHabitStats
+      parameters:
+        - $ref: '#/components/parameters/HabitId'
+      responses:
+        '200':
+          description: Habit statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HabitStatsResponse'
+        '404':
+          description: Habit not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  parameters:
+    HabitId:
+      name: id
+      in: path
+      required: true
+      description: The habit ID
+      schema:
+        type: integer
+        minimum: 1
+
+  schemas:
+    # Base response schemas
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          example: "Error message"
+
+    MessageResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            message:
+              type: string
+
+    # Health
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "ok"
+        timestamp:
+          type: string
+          format: date-time
+        uptime:
+          type: number
+          description: Server uptime in seconds
+
+    # Habit schemas
+    Habit:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          maxLength: 100
+          example: "Morning Exercise"
+        description:
+          type: string
+          example: "30 minutes of cardio"
+        color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+          example: "#22c55e"
+        icon:
+          type: string
+          example: "fire"
+        frequency:
+          type: string
+          enum: [daily, weekdays, weekends, custom]
+          example: "daily"
+        targetDays:
+          type: array
+          items:
+            type: integer
+            minimum: 0
+            maximum: 6
+          description: "Days of week (0=Sunday, 6=Saturday)"
+          example: [0, 1, 2, 3, 4, 5, 6]
+        isActive:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    HabitWithStatus:
+      allOf:
+        - $ref: '#/components/schemas/Habit'
+        - type: object
+          properties:
+            completedToday:
+              type: boolean
+              description: Whether the habit is completed for today
+            currentStreak:
+              type: integer
+              description: Current consecutive completion streak
+
+    HabitWithStats:
+      allOf:
+        - $ref: '#/components/schemas/HabitWithStatus'
+        - type: object
+          properties:
+            longestStreak:
+              type: integer
+            totalCompletions:
+              type: integer
+            completionRate:
+              type: number
+              format: float
+              description: "Percentage (0-100)"
+
+    CreateHabitRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          example: "Morning Exercise"
+        description:
+          type: string
+          example: "30 minutes of cardio"
+        color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+          default: "#6366f1"
+        icon:
+          type: string
+          default: "check"
+        frequency:
+          type: string
+          enum: [daily, weekdays, weekends, custom]
+          default: "daily"
+        targetDays:
+          type: array
+          items:
+            type: integer
+          default: [0, 1, 2, 3, 4, 5, 6]
+
+    UpdateHabitRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+        icon:
+          type: string
+        frequency:
+          type: string
+          enum: [daily, weekdays, weekends, custom]
+        targetDays:
+          type: array
+          items:
+            type: integer
+        isActive:
+          type: boolean
+
+    HabitsListResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/HabitWithStatus'
+
+    HabitResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/Habit'
+
+    HabitDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/HabitWithStats'
+
+    # Completion schemas
+    Completion:
+      type: object
+      properties:
+        id:
+          type: integer
+        habitId:
+          type: integer
+        completedDate:
+          type: string
+          format: date
+        createdAt:
+          type: string
+          format: date-time
+
+    CompletionRequest:
+      type: object
+      required:
+        - habitId
+        - date
+      properties:
+        habitId:
+          type: integer
+          example: 1
+        date:
+          type: string
+          format: date
+          example: "2024-01-20"
+
+    CompletionResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/Completion'
+
+    CompletionHistoryResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                habitId:
+                  type: integer
+                completions:
+                  type: array
+                  items:
+                    type: string
+                    format: date
+                  description: Array of completion dates
+
+    # Statistics schemas
+    BestStreak:
+      type: object
+      properties:
+        habitId:
+          type: integer
+          nullable: true
+        habitName:
+          type: string
+          nullable: true
+        streak:
+          type: integer
+
+    OverviewStatsResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                totalHabits:
+                  type: integer
+                activeHabits:
+                  type: integer
+                todayCompleted:
+                  type: integer
+                todayTotal:
+                  type: integer
+                weeklyCompletionRate:
+                  type: number
+                  format: float
+                monthlyCompletionRate:
+                  type: number
+                  format: float
+                currentBestStreak:
+                  $ref: '#/components/schemas/BestStreak'
+
+    PeriodStats:
+      type: object
+      properties:
+        week:
+          type: string
+          description: "ISO week (YYYY-Www)"
+        month:
+          type: string
+          description: "Month (YYYY-MM)"
+        completed:
+          type: integer
+        total:
+          type: integer
+        rate:
+          type: number
+          format: float
+
+    HabitStatsResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                habitId:
+                  type: integer
+                habitName:
+                  type: string
+                currentStreak:
+                  type: integer
+                longestStreak:
+                  type: integer
+                totalCompletions:
+                  type: integer
+                totalPossibleDays:
+                  type: integer
+                completionRate:
+                  type: number
+                  format: float
+                weeklyStats:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/PeriodStats'
+                monthlyStats:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/PeriodStats'
