@@ -16,7 +16,7 @@ info:
 servers:
   - url: http://localhost:3001
     description: Local development server
-  - url: https://habit-tracker-app.onrender.com
+  - url: https://habit-tracker-app-tagb.onrender.com
     description: Production server (Render.com)
 
 tags:

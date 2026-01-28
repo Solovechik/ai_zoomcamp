@@ -442,7 +442,7 @@ The application is configured for Render.com deployment via `render.yaml`:
    - PostgreSQL database (free tier)
    - Web service with Docker build
 
-**Production URL**: https://habit-tracker-app.onrender.com (example)
+**Production URL**: https://habit-tracker-app-tagb.onrender.com
 
 ### Manual Deployment
 
